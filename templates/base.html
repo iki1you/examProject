@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="icon" href="data:;base64,=">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}" />
+</head>
+<body>
+    {% block header %}
+    <header class="header_title">
+        Обзор профессии "Инженер-программист"
+    </header>
+    {% endblock header %}
+
+    {% block menu %}
+    <menu class="menu-block">
+        <ul class='menu-link'>
+            <li><a href="/">Главная страница</a></li>
+            <li><a href="/demand">Востребованность</a></li>
+            <li><a href="/geography">География</a></li>
+            <li><a href="/skills">Навыки</a></li>
+            <li><a href="/last_vacancies">Последние вакансии</a></li>
+        </ul>
+    </menu>
+    {% endblock menu %}
+
+    {% block footer %}
+    <footer class="footer-info">
+        Киржацкий Владимир Александрович РИ-220943
+    </footer>
+    {% endblock footer %}
+</body>
+</html>

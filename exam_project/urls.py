@@ -19,9 +19,13 @@ from django.urls import path
 
 from django.contrib import admin
 from django.urls import path
-from vacancy.views import index_page
+from vacancy.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index_page),
+    path('demand/', demand),
+    path('geography/', geography),
+    path('skills/', skills),
+    path('last_vacancies/', last_vacancies),
 ]
