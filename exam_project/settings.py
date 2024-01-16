@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'vacancy',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +72,10 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+
+MEDIA_ROOT = './static/images/'
+MEDIA_URL = '/media/'
 
 WSGI_APPLICATION = 'exam_project.wsgi.application'
 

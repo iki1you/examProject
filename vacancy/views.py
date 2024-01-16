@@ -1,4 +1,6 @@
+import json2html
 from django.shortcuts import render
+from vacancy.models import *
 
 
 def index_page(request):
@@ -6,7 +8,14 @@ def index_page(request):
 
 
 def demand(request):
-    return render(request, 'demand.html')
+    try:
+        tables = [(json2html.json2html.convert(json=i.table_content), i.name) for i in DemandTables.objects.all()]
+        graph = Graphics.objects.get(name='demand').image
+        return render(request, 'demand.html', {'data': tables, 'graph': graph})
+
+    except Exception as e:
+        print(e)
+        return render(request, 'index.html')
 
 
 def geography(request):
