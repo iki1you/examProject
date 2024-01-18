@@ -14,6 +14,6 @@ def get_currencies(date):
     base_url = f'https://www.cbr.ru/scripts/XML_daily.asp?date_req=01/{date}'
     response = requests.get(base_url).content
     x = BeautifulSoup(response, "xml")
-    valutes = [(i.find('CharCode').text, float(i.find('Value').text.replace(',', '.')))
+    valutes = [(i.find('CharCode').text, float(i.find('VunitRate').text.replace(',', '.')))
                for i in x.select('ValCurs > Valute')]
     return dict(valutes)

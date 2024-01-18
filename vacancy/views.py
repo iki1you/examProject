@@ -19,7 +19,14 @@ def demand(request):
 
 
 def geography(request):
-    return render(request, 'geography.html')
+    try:
+        tables = [(json2html.json2html.convert(json=i.table_content), i.name) for i in GeographyTables.objects.all()]
+        graph = Graphics.objects.get(name='geography').image
+        return render(request, 'geography.html', {'data': tables, 'graph': graph})
+
+    except Exception as e:
+        print(e)
+        return render(request, 'index.html')
 
 
 def skills(request):

@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="icon" href="data:;base64,=">
-    <link rel="stylesheet" href="{% static 'css/index.css' %}" />
-</head>
-<body>
-    <p>asdsax</p>
-
+{% block linkcss %}
+    <link rel="stylesheet" href="{% static "css/geography.css" %}">
+{% endblock %}
+{% block main %}
     <main>
-        asd
+        <center>
+            <img class="graph-geography" src="{% static "images/" %}{{graph}}" alt="error!"/>
+        </center>
+        <ul>
+        {% for table in data %}
+            {{ table.1 }}
+            {{ table.0 |safe }}
+        {% endfor %}
+        </ul>
     </main>
-
-</body>
-</html>
+{% endblock %}

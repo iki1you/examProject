@@ -3,7 +3,7 @@ from django.db import models
 
 class DemandTables(models.Model):
     name = models.CharField(max_length=255)
-    table_content = models.CharField(max_length=255)
+    table_content = models.CharField(max_length=1024)
 
     class Meta:
         verbose_name = 'demand_table'
@@ -14,7 +14,7 @@ class DemandTables(models.Model):
 
 class GeographyTables(models.Model):
     name = models.CharField(max_length=255)
-    table_content = models.CharField(max_length=255)
+    table_content = models.CharField(max_length=1024)
 
     class Meta:
         verbose_name = 'geography_table'
@@ -25,7 +25,7 @@ class GeographyTables(models.Model):
 
 class SkillsTables(models.Model):
     name = models.CharField(max_length=255)
-    table_content = models.CharField(max_length=255)
+    table_content = models.CharField(max_length=1024)
 
     class Meta:
         verbose_name = 'skills_table'

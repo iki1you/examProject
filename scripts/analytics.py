@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 import json
 from utils import get_currencies, change_data_format
+from collections import Counter
 
 
 def get_medium(x):
@@ -35,17 +36,8 @@ def get_vac_by_city(data):
          .assign(count=lambda x: round(x['count'] / k * 100, 2))
          .query('count >= 1')
          .assign(medium_salary=lambda x: np.round(x['medium_salary'])))
-    return (d.sort_values(['medium_salary', 'area_name'], ascending=(False, True))[:10]['medium_salary'],
-            d.sort_values(['count', 'area_name'], ascending=(False, True))[:10]['count'])
-
-
-def create_report():
-    csv = 'vacancies.csv'
-    vacancies = parse_csv(csv)
-    d = get_vac_by_years(vacancies)
-    salary_vac, count_vac = get_vac_by_city(vacancies)
-    data = [d, salary_vac, count_vac]
-    return data
+    return (d.sort_values(['medium_salary', 'area_name'], ascending=(False, True))[:10]['medium_salary'].to_dict(),
+            d.sort_values(['count', 'area_name'], ascending=(False, True))[:10]['count'].to_dict())
 
 
 def to_rub(salary, published_at, currency, hash_dict):
@@ -69,7 +61,7 @@ def to_rub(salary, published_at, currency, hash_dict):
 
 def parse_csv(csv):
     hash_currencies = dict()
-    names = ['Index', 'name', 'salary_from', 'salary_to', 'salary_currency', 'area_name', 'published_at']
+    names = ['name', 'skills', 'salary_from', 'salary_to', 'salary_currency', 'area_name', 'published_at']
     vacancies = (pd.read_csv(csv, names=names, low_memory=False)
                  .assign(salary_from=lambda x: x['salary_from'].fillna(x['salary_to']))
                  .assign(salary_to=lambda x: x['salary_to'].fillna(x['salary_from']))
@@ -80,13 +72,10 @@ def parse_csv(csv):
     vacancies['medium_salary'] = vacancies.apply(lambda x: to_rub(
         x['medium_salary'], x['published_at'], x['salary_currency'], hash_currencies), axis=1)
     vacancies['published_at'] = vacancies['published_at'].apply(get_year_vacancy)
-    return vacancies
+    return vacancies.query('medium_salary < 10000000000')
 
 
-def create_plot():
-    csv = 'vacancies.csv'
-    vac = 'engineer|инженер программист|інженер|it инженер|инженер разработчик'
-    vacancies = parse_csv(csv)
+def demand_create_plot(vacancies, vac):
     data = []
     fig, sub = plt.subplots(3, 1, figsize=(10, 15))
     vac_by_years = get_vac_by_years(vacancies)['medium_salary'].to_dict()
@@ -163,9 +152,95 @@ def set_font_size(ax, size):
         label.set_transform(label.get_transform() + offset)
 
 
-def create_pdf():
-    figure, sub, data = create_plot()
-    figure.savefig('graphics.png')
+def geography_create_plot(vacancies, vac):
+    data = []
+    fig, sub = plt.subplots(4, 1, figsize=(15, 40))
+    margins = {
+        "left": 0.1,
+        "bottom": 0.020,
+        "right": 0.990,
+        "top": 0.98
+    }
+
+    fig.subplots_adjust(**margins)
+    level_sal_city, count_sal_city = get_vac_by_city(vacancies)
+    level_sal_city_filtered, count_sal_city_filtered = get_vac_by_city(vacancies[vacancies['name']
+                                             .str.contains(vac, na=False, case=False)])
+    data.append((level_sal_city, count_sal_city))
+    data.append((level_sal_city_filtered, count_sal_city_filtered))
+
+    ax: Axes = sub[0]
+    x = [i for i in level_sal_city.keys()]
+    y = [i for i in level_sal_city.values()]
+
+    width = 0.3
+
+    ylable = range(0, int(max(y)) + 19999, 20000)
+    ax.barh(x, y, width)
+    ax.set_xticks(ylable)
+    ax.set_title('Уровень зарплат по городам')
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    set_font_size(ax, 8)
+
+    ax: Axes = sub[1]
+    x = [i for i in level_sal_city_filtered.keys()]
+    y = [i for i in level_sal_city_filtered.values()]
+
+    width = 0.3
+
+    ylable = range(0, int(max(y)) + 19999, 20000)
+    ax.barh(x, y, width)
+    ax.set_xticks(ylable)
+    ax.set_title('Уровень зарплат по городам для профессии программист-инженер')
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    set_font_size(ax, 8)
+
+    ax: Axes = sub[2]
+    x = [i for i in count_sal_city.keys()]
+    y = np.array([i for i in count_sal_city.values()])
+
+    ax.pie(y, labels=x)
+    ax.set_title('Доля вакансий по городам')
+    set_font_size(ax, 8)
+
+    ax: Axes = sub[3]
+    x = [i for i in count_sal_city_filtered.keys()]
+    y = np.array([i for i in count_sal_city_filtered.values()])
+
+    ax.pie(y, labels=x)
+    ax.set_title('Доля вакансий по городам для профессии программист-инженер')
+    set_font_size(ax, 8)
+    return fig, sub, data
+
+
+def skills_format(line):
+    return '\n'.join(line.split(', '))
+
+
+def update_counter(x, counter):
+    if isinstance(x, str):
+        x = x.replace('\r', '')
+        return counter.update(Counter(x.strip().split('\n')))
+
+
+def get_skills_by_years(vacancies, years):
+    skills_by_years = dict()
+    counter = Counter()
+    vacancies['skills'].apply(lambda x: update_counter(x, counter))
+    top_skills = dict(counter.most_common(20))
+    print(top_skills)
+    # for year in years:
+    #     counter = Counter()
+    #     vacancies[vacancies['published_at'] == year]['skills'].apply(lambda x: update_counter(x, counter))
+    #     skills_by_years[year] = dict(counter)
+    return skills_by_years.values()
+
+
+def save_results(vacancies, vac):
+    figure, sub, data = demand_create_plot(vacancies, vac)
+    figure.savefig('graphs/demand.png')
 
     data_year_keys = list(zip(*list(data[0][0].items())[::-1]))
     data_year_keys = [data_year_keys[0][::-1], data_year_keys[1][::-1]]
@@ -178,23 +253,59 @@ def create_pdf():
 
     data_year_values_filtered = tuple(zip(*list(data[1][1].items())[::-1]))
     data_year_values_filtered = [data_year_values_filtered[0][::-1], data_year_values_filtered[1][::-1]]
+
+    figure, sub, data = geography_create_plot(vacancies, vac)
+    figure.savefig('graphs/geography.png')
+
+    level_sal_city = list(zip(*list(data[0][0].items())[::-1]))
+    level_sal_city = [level_sal_city[0][::-1], level_sal_city[1][::-1]]
+
+    count_sal_city = tuple(zip(*list(data[0][1].items())[::-1]))
+    count_sal_city = [count_sal_city[0][::-1], count_sal_city[1][::-1]]
+
+    level_sal_city_filtered = tuple(zip(*list(data[1][0].items())[::-1]))
+    level_sal_city_filtered = [level_sal_city_filtered[0][::-1], level_sal_city_filtered[1][::-1]]
+
+    count_sal_city_filtered = tuple(zip(*list(data[1][1].items())[::-1]))
+    count_sal_city_filtered = [count_sal_city_filtered[0][::-1], count_sal_city_filtered[1][::-1]]
+    get_skills_by_years(vacancies, data_year_keys[0])
+
+    get_skills_by_years(vacancies[vacancies['name'].str.contains(vac, na=False, case=False)],
+                        data_year_keys[0])
+
     with open('tables.txt', 'w', encoding='utf-8') as file:
-        print(*data_year_keys)
-        print(*data_year_keys_filtered)
-        print(*data_year_values)
-        print(*data_year_values_filtered)
-        print("Динамика уровня зарплат по годам:")
+        file.write("Динамика уровня зарплат по годам:\n")
         file.write(json.dumps(dict(zip(*data_year_keys))))
         file.write('\n')
-        print("Динамика уровня зарплат по годам для профессии инженер-программист:")
-        file.write(json.dumps(dict(zip(*data_year_keys_filtered))))
+        file.write("Динамика уровня зарплат по годам для профессии инженер-программист:\n")
+        file.write(json.dumps(dict(zip(*data_year_keys_filtered)), ensure_ascii=False))
         file.write('\n')
-        print("Динамика количества вакансий по годам:")
+        file.write("Динамика количества вакансий по годам:\n")
         file.write(json.dumps(dict(zip(*data_year_values))))
         file.write('\n')
-        print("Динамика количества вакансий по годам для профессии инженер-программист:")
+        file.write("Динамика количества вакансий по годам для профессии инженер-программист:\n")
         file.write(json.dumps(dict(zip(*data_year_values_filtered))))
+        file.write('\n')
+        file.write('\n')
+        file.write("Динамика уровня зарплат по городам:\n")
+        json.dump(dict(zip(*level_sal_city)), file, ensure_ascii=False)
+        file.write('\n')
+        file.write("Доля вакансий по городам:\n")
+        json.dump(dict(zip(*count_sal_city)), file, ensure_ascii=False)
+        file.write('\n')
+        file.write("Динамика уровня зарплат по городам для профессии инженер-программист:\n")
+        json.dump(dict(zip(*level_sal_city_filtered)), file, ensure_ascii=False)
+        file.write('\n')
+        file.write("Доля вакансий по городам для профессии инженер-программист:\n")
+        json.dump(dict(zip(*count_sal_city_filtered)), file, ensure_ascii=False)
         file.write('\n')
 
 
-create_pdf()
+def create_analytics():
+    csv = 'testvac.csv'
+    vac = 'engineer|инженер программист|інженер|it инженер|инженер разработчик'
+    vacancies = parse_csv(csv)
+    save_results(vacancies, vac)
+
+
+create_analytics()
