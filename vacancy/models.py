@@ -25,7 +25,7 @@ class GeographyTables(models.Model):
 
 class SkillsTables(models.Model):
     name = models.CharField(max_length=255)
-    table_content = models.CharField(max_length=1024)
+    table_content = models.CharField(max_length=5000)
 
     class Meta:
         verbose_name = 'skills_table'

@@ -1,19 +1,15 @@
 <!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="icon" href="data:;base64,=">
-    <link rel="stylesheet" href="{% static 'css/index.css' %}" />
-</head>
-<body>
-    <p>asdsax</p>
-
+{% block main %}
     <main>
-        asd
+        <img src="{% static "images/" %}{{graph_skills}}" alt="error!"/>
+        <img src="{% static "images/" %}{{graph_skills_filtered}}" alt="error!"/>
+        <ul>
+        {% for table in data %}
+            {{ table.1 }}
+            {{ table.0 |safe }}
+        {% endfor %}
+    </ul>
     </main>
-
-</body>
-</html>
+{% endblock %}

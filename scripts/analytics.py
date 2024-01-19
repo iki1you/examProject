@@ -90,9 +90,8 @@ def demand_create_plot(vacancies, vac):
     y = [i for i in vac_by_years.values()]
     y2 = [i for i in vac_by_years_filtered.values()]
     width = 0.3
-
-    ax.bar(x - width/2, y, width, label='средняя з/п')
-    ax.bar(x + width/2, y2, width, label=f'з/п инженер программист')
+    ax.bar(x - width / 2, y, width, label='средняя з/п')
+    ax.bar(x + width / 2, y2, width, label=f'з/п инженер программист')
     ax.set_title('Уровень зарплат по годам', fontsize=12)
     ax.set_xticks(x)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=90, ha='right')
@@ -165,7 +164,7 @@ def geography_create_plot(vacancies, vac):
     fig.subplots_adjust(**margins)
     level_sal_city, count_sal_city = get_vac_by_city(vacancies)
     level_sal_city_filtered, count_sal_city_filtered = get_vac_by_city(vacancies[vacancies['name']
-                                             .str.contains(vac, na=False, case=False)])
+                                                                       .str.contains(vac, na=False, case=False)])
     data.append((level_sal_city, count_sal_city))
     data.append((level_sal_city_filtered, count_sal_city_filtered))
 
@@ -230,12 +229,57 @@ def get_skills_by_years(vacancies, years):
     counter = Counter()
     vacancies['skills'].apply(lambda x: update_counter(x, counter))
     top_skills = dict(counter.most_common(20))
-    print(top_skills)
-    # for year in years:
-    #     counter = Counter()
-    #     vacancies[vacancies['published_at'] == year]['skills'].apply(lambda x: update_counter(x, counter))
-    #     skills_by_years[year] = dict(counter)
-    return skills_by_years.values()
+    for year in years:
+        counter = Counter()
+        vacancies[vacancies['published_at'] == year]['skills'].apply(lambda x: update_counter(x, counter))
+        if len(counter) != 0:
+            skills_by_years[year] = dict(counter.most_common(20))
+    return top_skills, skills_by_years
+
+
+def skills_create_plot(vacancies, vac, data_year_keys):
+    data = []
+    top_skills, skills_by_years = get_skills_by_years(vacancies, data_year_keys[0])
+    print(top_skills, skills_by_years)
+    plt.rcParams.update({'figure.max_open_warning': 0})
+    fig, sub = plt.subplots(len(skills_by_years.items()) + 1, 1, figsize=(10, (len(skills_by_years.items()) + 1) * 5))
+    margins = {
+        "left": 0.3,
+        "bottom": 0.020,
+        "right": 0.990,
+        "top": 0.98
+    }
+    fig.subplots_adjust(**margins)
+    data.append(top_skills)
+    data.append(skills_by_years)
+    ax: Axes = sub[0]
+    x = [i for i in reversed(top_skills.keys())]
+    y = [i for i in reversed(top_skills.values())]
+    width = 0.3
+    ylable = np.arange(0, max(y) + 1, max(max(y) // 10, 1))
+    ax.barh(x, y, width)
+    ax.set_xticks(ylable)
+    ax.set_title(f'Топ 20 навыков за все время{vac}')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    set_font_size(ax, 8)
+
+    for i, year in enumerate(skills_by_years.keys()):
+        ax: Axes = sub[i + 1]
+        x = [i for i in reversed(skills_by_years[year].keys())]
+        y = [i for i in reversed(skills_by_years[year].values())]
+        width = 0.3
+        try:
+            ylable = np.arange(0, max(y) + 1, max(max(y) // 10, 1))
+            ax.barh(x, y, width)
+            ax.set_xticks(ylable)
+            ax.set_title(f'Топ 20 навыков за {year}{vac}')
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+            set_font_size(ax, 8)
+        except Exception as e:
+            print(x, y)
+            print(e)
+
+    return fig, sub, data
 
 
 def save_results(vacancies, vac):
@@ -268,10 +312,18 @@ def save_results(vacancies, vac):
 
     count_sal_city_filtered = tuple(zip(*list(data[1][1].items())[::-1]))
     count_sal_city_filtered = [count_sal_city_filtered[0][::-1], count_sal_city_filtered[1][::-1]]
-    get_skills_by_years(vacancies, data_year_keys[0])
 
-    get_skills_by_years(vacancies[vacancies['name'].str.contains(vac, na=False, case=False)],
-                        data_year_keys[0])
+    figure, sub, data = skills_create_plot(vacancies, '', data_year_keys)
+    figure.savefig('graphs/skills.png')
+    top_skills = data[0]
+    skills_by_years = data[1]
+
+    figure, sub, data = skills_create_plot(
+        vacancies[vacancies['name'].str.contains(vac, na=False, case=False)],
+        ' для профессии инженер-программист', data_year_keys)
+    figure.savefig('graphs/skills_filtered.png')
+    top_skills_filtered = data[0]
+    skills_by_years_filtered = data[1]
 
     with open('tables.txt', 'w', encoding='utf-8') as file:
         file.write("Динамика уровня зарплат по годам:\n")
@@ -286,6 +338,7 @@ def save_results(vacancies, vac):
         file.write("Динамика количества вакансий по годам для профессии инженер-программист:\n")
         file.write(json.dumps(dict(zip(*data_year_values_filtered))))
         file.write('\n')
+
         file.write('\n')
         file.write("Динамика уровня зарплат по городам:\n")
         json.dump(dict(zip(*level_sal_city)), file, ensure_ascii=False)
@@ -300,10 +353,27 @@ def save_results(vacancies, vac):
         json.dump(dict(zip(*count_sal_city_filtered)), file, ensure_ascii=False)
         file.write('\n')
 
+        file.write('\n')
+        file.write("Топ 20 навыков:\n")
+        json.dump(top_skills, file, ensure_ascii=False)
+        file.write('\n')
+        file.write("Топ 20 навыков по годам:\n")
+        json.dump(skills_by_years, file, ensure_ascii=False)
+        file.write('\n')
+
+        file.write('\n')
+        file.write("Топ 20 навыков для профессии инженер-программист:\n")
+        json.dump(top_skills_filtered, file, ensure_ascii=False)
+        file.write('\n')
+        file.write("Топ 20 навыков по годам для профессии инженер-программист:\n")
+        json.dump(skills_by_years_filtered, file, ensure_ascii=False)
+        file.write('\n')
+
 
 def create_analytics():
-    csv = 'testvac.csv'
-    vac = 'engineer|инженер программист|інженер|it инженер|инженер разработчик'
+    csv = 'vacancies.csv'
+    vac = ('engineer|инженер программист|інженер|it инженер|инженер '
+           'разработчик|программист-инженер|инженер-программист|инженер-разработчик')
     vacancies = parse_csv(csv)
     save_results(vacancies, vac)
 
