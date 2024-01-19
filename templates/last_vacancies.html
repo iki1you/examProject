@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="icon" href="data:;base64,=">
-    <link rel="stylesheet" href="{% static 'css/index.css' %}" />
-</head>
-<body>
-    <p>asdsax</p>
+{% block main %}
 
     <main>
-        asd
+        <div class="vacancies">
+
+        </div>
+
+        <template id="element-template">
+            <div class="el">
+                <span></span>
+            </div>
+        </template>
     </main>
 
-</body>
-</html>
+
+
+    <script src="{% static "js/last_vacancies.js" %}"></script>
+{% endblock %}
