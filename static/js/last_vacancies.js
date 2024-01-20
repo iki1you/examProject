@@ -1,4 +1,4 @@
-fetch("https://api.hh.ru/vacancies?search_field=name&text=':(инженер AND программист)'&order_by=publication_time&per_page=10&only_with_salary=True")
+fetch("https://api.hh.ru/vacancies?search_field=name&text=':(инженер AND программист) NOT схемотехник NOT эколог NOT проектировщик'&order_by=publication_time&per_page=10&only_with_salary=True")
   .then((response) => response.json())
   .then(async (answer) => {
       const data = [];
