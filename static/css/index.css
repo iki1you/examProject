@@ -1,7 +1,21 @@
-main {
-    font-size: 40px;
+.info-content li {
+    font-size: 18px;
+    margin-bottom: 20px;
 }
 
-p {
-    color: aqua;
+.index-img-1 {
+    max-height: 300px;
+    width: auto;
+}
+.index-img-2 {
+    max-height: 300px;
+    width: auto;
+}
+.index-img-3 {
+    max-height: 300px;
+    width: auto;
+}
+
+img {
+    margin-left: 40px;
 }
