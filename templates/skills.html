@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
+{% block linkcss %}
+    <title>Навыки</title>
+    <link rel="stylesheet" href="{% static "css/skills.css" %}">
+{% endblock %}
 {% block main %}
     <main>
+        <center><h1>Навыки</h1></center>
         <img src="{% static "images/" %}{{graph_skills}}" alt="error!"/>
         <img src="{% static "images/" %}{{graph_skills_filtered}}" alt="error!"/>
-        <ul>
-        {% for table in data %}
-            {{ table.1 }}
-            {{ table.0 |safe }}
-        {% endfor %}
-    </ul>
+        <div class="tables">
+            {% for table in data %}
+            <div class="el">
+                <p>{{ table.1 }}</p>
+                {{ table.0 |safe }}
+            </div>
+            {% endfor %}
+        </div>
     </main>
 {% endblock %}

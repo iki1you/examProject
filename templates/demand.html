@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
+{% block linkcss %}
+    <title>Востребованность</title>
+    <link rel="stylesheet" href="{% static "css/demand.css" %}">
+{% endblock %}
 {% block main %}
     <main>
+        <center><h1>Востребованность</h1></center>
         <img src="{% static "images/" %}{{graph}}" alt="error!"/>
-        <ul>
+        <div class="tables">
         {% for table in data %}
-            {{ table.1 }}
-            {{ table.0 |safe }}
+            <div class="elem">
+                <p>{{ table.1 }}</p>
+                {{ table.0 |safe }}
+            </div>
         {% endfor %}
-    </ul>
+        </div>
     </main>
 {% endblock %}

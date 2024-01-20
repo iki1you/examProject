@@ -1,13 +1,4 @@
-.graph-geography {
-  max-width: 70%;
-  height: auto;
-}
-html, body {
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-.tables-geography {
+.tables {
     display: grid;
     grid-template-columns: 1fr 1fr;
     margin-bottom: 100px;

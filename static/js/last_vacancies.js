@@ -15,10 +15,17 @@ const renderVacancies = (data) => {
     const picturesList = document.querySelector('.vacancies');
     const pictureTemplate = document.querySelector('#element-template').content;
     const pictureListFragment = document.createDocumentFragment();
-    console.log(data);
     data.forEach((element) => {
        const newPicture = pictureTemplate.cloneNode(true);
-       newPicture.querySelector('span').textContent = element[0] + ' ' + element[1] + ' ' + element[2]['from'];
+       newPicture.querySelector('.name').textContent = element[0];
+       newPicture.querySelector('.employer').textContent = element[1];
+       newPicture.querySelector('.salary').textContent = [element[2]['from'], element[2]['to']]
+           .filter((x) => !(x === null))
+           .join("-") + " " + element[2]['currency'] + " " + {true: '(Без вычета налогов)', false: '(С вычетом налогов)', null: ''}[element[2]['gross']];
+       newPicture.querySelector('.area').textContent = element[3];
+       newPicture.querySelector('.published_at').textContent = element[4];
+       newPicture.querySelector('.description').innerHTML = element[5];
+       newPicture.querySelector('.key_skills').textContent = element[6].map((elem) => elem["name"]).join("; ");
        pictureListFragment.appendChild(newPicture);
     });
 

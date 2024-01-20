@@ -1,0 +1,17 @@
+.el {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    background-color: antiquewhite;
+}
+
+.el span {
+    border: 1px solid;
+}
+
+.description ul {
+    padding-left: 17px;
+}
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}

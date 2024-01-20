@@ -1,21 +1,38 @@
 <!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
+{% block linkcss %}
+    <title>Последние вакансии</title>
+    <link rel="stylesheet" href="{% static "css/last_vacancies.css" %}">
+{% endblock %}
 {% block main %}
 
     <main>
+        <center><h1>Последние вакансии</h1></center>
         <div class="vacancies">
-
+            <div class="el">
+                <span class="name">Название</span>
+                <span class="description">Описание</span>
+                <span class="key_skills">Навыки</span>
+                <span class="employer">Работодатель</span>
+                <span class="salary">Зарплата</span>
+                <span class="area">Город</span>
+                <span class="published_at">Дата публикации</span>
+            </div>
         </div>
 
         <template id="element-template">
             <div class="el">
-                <span></span>
+                <span class="name"></span>
+                <span class="description"></span>
+                <span class="key_skills"></span>
+                <span class="employer"></span>
+                <span class="salary"></span>
+                <span class="area"></span>
+                <span class="published_at"></span>
             </div>
         </template>
     </main>
-
-
 
     <script src="{% static "js/last_vacancies.js" %}"></script>
 {% endblock %}
